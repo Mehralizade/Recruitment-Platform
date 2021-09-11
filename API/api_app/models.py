@@ -23,6 +23,8 @@ class Study_Subject(auth.models.User, auth.models.PermissionsMixin):
     is_researcher = models.BooleanField()
     bank_account = models.TextField()
     age = models.PositiveIntegerField()
+
+    
     def __str__(self):
         return "@{}".format(self.username)
 
@@ -31,7 +33,7 @@ class Researcher(auth.models.User, auth.models.PermissionsMixin):
 
     def __str__(self):
         return "@{}".format(self.username)
-
+   
 class Research_Announcement(models.Model):
     Online = 'On'
     Offline = 'Off'
@@ -53,7 +55,8 @@ class Research_Announcement(models.Model):
     reward = models.PositiveIntegerField()
     duration = models.PositiveIntegerField()
     participant_number = models.PositiveIntegerField()
-    date = models.DateTimeField()
+    date = models.DateField()
+    time = models.TextField()
     location = models.CharField(max_length=1000)
     additional_info = models.TextField()
     #exp_image = models.ImageField(upload_to='announcement_images/',default='')
