@@ -66,10 +66,63 @@ class AnnouncementPostViewSet(viewsets.ModelViewSet):
             queryset = Research_Announcement.objects.filter(author=search_param4)
 
 
-            
+        
        
            
         return queryset
+
+    def partial_update(self, request, *args, **kwargs):
+        post_object = self.get_object()
+        data = request.data
+        try:
+            author = Researcher.objects.get(id=data["author"])
+            post_object.author.add(author.id) 
+        except KeyError:
+            pass
+        try:
+            likes = Study_Subject.objects.get(id=data["likes"])
+            post_object.likes.add(likes.id) 
+        except KeyError:
+            pass
+        try:
+            applicants = Study_Subject.objects.get(id=data["applicants"])
+            post_object.applicants.add(applicants.id) 
+        except KeyError:
+            pass
+        try:
+            confirmed_applicants = Study_Subject.objects.get(id=data["confirmed_applicants"])
+            post_object.confirmed_applicants.add(confirmed_applicants.id) 
+        except KeyError:
+            pass
+        try:
+            declined_applicants = Study_Subject.objects.get(id=data["declined_applicants"])
+            post_object.declined_applicants.add(declined_applicants.id) 
+        except KeyError:
+            pass
+        
+
+        post_object.title = data.get("title", post_object.title)
+        post_object.description = data.get("description", post_object.description)
+        post_object.exp_type = data.get("exp_type", post_object.exp_type)
+        post_object.collected_data = data.get("collected_data", post_object.collected_data)
+        post_object.reward = data.get("reward", post_object.reward)
+        post_object.duration = data.get("duration", post_object.duration)
+        post_object.participant_number = data.get("participant_number", post_object.participant_number)
+        post_object.date = data.get("date", post_object.date)
+        post_object.time = data.get("time", post_object.time)
+        post_object.location = data.get("location", post_object.location)
+        post_object.additional_info = data.get("additional_info", post_object.additional_info)
+        
+        post_object.created_at = data.get("production_year", post_object.created_at)
+        post_object.collected_data = data.get("collected_data", post_object.collected_data)
+        
+        post_object.save()
+        
+        
+        
+        serializer = ResearchAnnouncementSerializer(post_object)
+
+        return Response(serializer.data)
     serializer_class = ResearchAnnouncementSerializer
 
 class RatingViewSet(viewsets.ModelViewSet):
@@ -105,3 +158,6 @@ class CustomAuthToken(ObtainAuthToken):
             
             'is_researcher':response.values_list('is_researcher', flat=True).order_by('id')[0]
         })
+
+
+
