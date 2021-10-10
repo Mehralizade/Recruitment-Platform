@@ -19,6 +19,15 @@ class ResearcherViewSet(viewsets.ModelViewSet):
     queryset = Researcher.objects.all()
     serializer_class = ResearcherSerializer
 
+class UsersViewSet(viewsets.ModelViewSet):
+     def get_queryset(self):
+        queryset = Researcher.objects.all()
+        search_param1 = self.request.query_params.get('username', None)
+        if  Researcher.objects.filter(username=search_param1).exists():
+            return Researcher.objects.filter(username=search_param1)
+        else:
+            return Study_Subject.objects.filter(username=search_param1)
+        
 class AnnouncementPostViewSet(viewsets.ModelViewSet):
     """
     A simple ViewSet for viewing and editing research announcements.
@@ -28,7 +37,7 @@ class AnnouncementPostViewSet(viewsets.ModelViewSet):
         search_param1 = self.request.query_params.get('date', None)
         search_param2 = self.request.query_params.get('reward', None)
         search_param3 = self.request.query_params.get('setting', None)
-
+        search_param4 = self.request.query_params.get('researcher_id', None)
         if search_param1 is not None:
             if search_param1=='three':
                 queryset = Research_Announcement.objects.all().filter(date__range=(datetime.date.today()-datetime.timedelta(days=1), 
@@ -53,7 +62,8 @@ class AnnouncementPostViewSet(viewsets.ModelViewSet):
             else:
                 queryset = Research_Announcement.objects.all().order_by('-reward')
         
-                
+        if search_param4 is not None:
+            queryset = Research_Announcement.objects.filter(author=search_param4)
 
 
             
@@ -70,3 +80,28 @@ class RatingViewSet(viewsets.ModelViewSet):
     serializer_class = RatingSerializer
 
 
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
+
+class CustomAuthToken(ObtainAuthToken):
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        serializer_class = ResearcherSerializer
+        if Researcher.objects.filter(username=user.username).exists():
+            response =  Researcher.objects.filter(username=user.username)
+        else:
+            serializer_class = StudySubjectSerializer
+            response =  Study_Subject.objects.filter(username=user.username)
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+            'username':user.username,
+            
+            'is_researcher':response.values_list('is_researcher', flat=True).order_by('id')[0]
+        })
