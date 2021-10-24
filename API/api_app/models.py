@@ -23,7 +23,7 @@ class Study_Subject(auth.models.User, auth.models.PermissionsMixin):
     is_researcher = models.BooleanField()
     bank_account = models.TextField()
     age = models.PositiveIntegerField()
-
+    reputation = models.PositiveIntegerField(null=True)
     
     def __str__(self):
         return "@{}".format(self.username)

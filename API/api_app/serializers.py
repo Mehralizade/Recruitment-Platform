@@ -41,7 +41,7 @@ class ResearchAnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Research_Announcement
         fields = ('__all__')
-
+        depth = 1
         
 
 class RatingSerializer(serializers.ModelSerializer):

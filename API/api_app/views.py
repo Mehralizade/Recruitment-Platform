@@ -38,6 +38,9 @@ class AnnouncementPostViewSet(viewsets.ModelViewSet):
         search_param2 = self.request.query_params.get('reward', None)
         search_param3 = self.request.query_params.get('setting', None)
         search_param4 = self.request.query_params.get('researcher_id', None)
+        search_param5 = self.request.query_params.get('applied', None)
+        search_param6 = self.request.query_params.get('confirmed', None)
+        search_param7 = self.request.query_params.get('declined', None)
         if search_param1 is not None:
             if search_param1=='three':
                 queryset = Research_Announcement.objects.all().filter(date__range=(datetime.date.today()-datetime.timedelta(days=1), 
@@ -64,7 +67,13 @@ class AnnouncementPostViewSet(viewsets.ModelViewSet):
         
         if search_param4 is not None:
             queryset = Research_Announcement.objects.filter(author=search_param4)
-
+        if search_param5 is not None:
+            queryset = Research_Announcement.objects.filter(applicants=search_param5)
+        if search_param6 is not None:
+            queryset = Research_Announcement.objects.filter(confirmed_applicants=search_param6)
+        if search_param7 is not None:
+            queryset = Research_Announcement.objects.filter(declined_applicants=search_param7)
+        
 
         
        
@@ -131,6 +140,20 @@ class RatingViewSet(viewsets.ModelViewSet):
     """
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        user = Study_Subject.objects.get(id=data["rated"])
+        if user.reputation == None:
+            user.reputation = data["overall_rating"]
+        else:
+            user.reputation = (user.reputation+data["overall_rating"])//2
+        
+        user.save()
+        print(user.reputation)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 from rest_framework.authtoken.views import ObtainAuthToken
