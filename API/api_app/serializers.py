@@ -41,7 +41,14 @@ class ResearchAnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Research_Announcement
         fields = ('__all__')
-        depth = 1
+        
+    def __init__(self, *args, **kwargs):
+        super(ResearchAnnouncementSerializer, self).__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if request and request.method=='POST':
+            self.Meta.depth = 0
+        else:
+            self.Meta.depth = 1
         
 
 class RatingSerializer(serializers.ModelSerializer):

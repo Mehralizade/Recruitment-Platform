@@ -2,7 +2,7 @@ from django.shortcuts import render
 from .models import *
 from .serializers import *
 from rest_framework import viewsets
-import datetime
+from datetime import datetime, timedelta
 # Create your views here.
 class StudySubjectViewSet(viewsets.ModelViewSet):
     """
@@ -33,7 +33,8 @@ class AnnouncementPostViewSet(viewsets.ModelViewSet):
     A simple ViewSet for viewing and editing research announcements.
     """
     def get_queryset(self):
-        queryset = Research_Announcement.objects.all()
+        queryset = Research_Announcement.objects.order_by('-created_at')
+        print(queryset)
         search_param1 = self.request.query_params.get('date', None)
         search_param2 = self.request.query_params.get('reward', None)
         search_param3 = self.request.query_params.get('setting', None)
@@ -42,28 +43,28 @@ class AnnouncementPostViewSet(viewsets.ModelViewSet):
         search_param6 = self.request.query_params.get('confirmed', None)
         search_param7 = self.request.query_params.get('declined', None)
         if search_param1 is not None:
-            if search_param1=='three':
-                queryset = Research_Announcement.objects.all().filter(date__range=(datetime.date.today()-datetime.timedelta(days=1), 
-                datetime.date.today()))
+            if search_param1=='3':
+                three_days_ago = datetime.today() - timedelta(days=3)
+                queryset = queryset.filter(created_at__gte=three_days_ago)
             
-            elif search_param1=='One week':
-                queryset = Research_Announcement.objects.all().filter(created_at__range=(datetime.date.today(), 
-                datetime.date.today()+datetime.timedelta(days=7)))
+            elif search_param1=='7':
+                one_week_ago = datetime.today() - timedelta(days=7)
+                queryset = queryset.filter(created_at__gte=one_week_ago)
 
         if search_param2 is not None:
             if search_param3 is not None:
                 if search_param2=='Ascending' and search_param3=='Online':
-                    queryset = Research_Announcement.objects.all().order_by('reward').filter(setting='On')
+                    queryset = queryset.order_by('reward').filter(setting='On')
                 elif search_param2=='Descending' and search_param3=='Online':
-                    queryset = Research_Announcement.objects.all().order_by('-reward').filter(setting='On')
+                    queryset = queryset.order_by('-reward').filter(setting='On')
                 elif search_param2=='Descending' and search_param3=='All':
-                    queryset = Research_Announcement.objects.all().order_by('-reward')
+                    queryset = queryset.order_by('-reward')
                 elif search_param2=='Ascending' and search_param3=='All':
-                    queryset = Research_Announcement.objects.all().order_by('reward')
+                    queryset = queryset.order_by('reward')
             elif search_param2=='Ascending':
-                queryset = Research_Announcement.objects.all().order_by('reward')
+                queryset = queryset.order_by('reward')
             else:
-                queryset = Research_Announcement.objects.all().order_by('-reward')
+                queryset = queryset.order_by('-reward')
         
         if search_param4 is not None:
             queryset = Research_Announcement.objects.filter(author=search_param4)
@@ -79,7 +80,8 @@ class AnnouncementPostViewSet(viewsets.ModelViewSet):
        
            
         return queryset
-
+    
+        
     def partial_update(self, request, *args, **kwargs):
         post_object = self.get_object()
         data = request.data
@@ -122,8 +124,8 @@ class AnnouncementPostViewSet(viewsets.ModelViewSet):
         post_object.location = data.get("location", post_object.location)
         post_object.additional_info = data.get("additional_info", post_object.additional_info)
         
-        post_object.created_at = data.get("production_year", post_object.created_at)
-        post_object.collected_data = data.get("collected_data", post_object.collected_data)
+        post_object.created_at = data.get("created_at", post_object.created_at)
+        
         
         post_object.save()
         
